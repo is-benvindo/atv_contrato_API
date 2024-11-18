@@ -1,0 +1,847 @@
+---
+  openapi: 3.0.3
+  info:
+    title: API PatroVôlei
+    version: 1.0.0
+    description: >-
+      Esta API permite o gerenciamento completo de partidas de vôlei,
+      incluindo funcionalidades para:
+  
+      - Gerenciamento de Jogadores: Cadastro, edição, exclusão e listagem de jogadores.
+  
+      - Gerenciamento de Partidas: Criação, edição e listagem de partidas, com filtros por situação, tipo e local.
+  
+      - Avaliações: Envio e gestão de avaliações para jogadores e anfitriões, promovendo feedbacks construtivos.
+  
+      - Convites: Envio e acompanhamento de convites para partidas, facilitando a organização.
+  
+  
+      Esta API é ideal para integrar a funcionalidade de gerenciamento de partidas de vôlei em sistemas e aplicativos.
+    termsOfService: https://gerenciadorvolei.com/termos-de-servico
+    contact:
+      name: Equipe de Suporte
+      email: suporte@gerenciadorvolei.com
+      url: https://gerenciadorvolei.com/suporte
+    license:
+      name: MIT License
+      url: https://opensource.org/licenses/MIT
+  components:
+    securitySchemes:
+      BearerAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
+    schemas:
+      Jogador: null
+    type: object
+    properties:
+      id:
+        type: string
+        example: jogador-123
+      nome:
+        type: string
+        example: João Silva
+      email:
+        type: string
+        format: email
+        example: joao.silva@email.com
+      sexo:
+        type: string
+        enum:
+          - masculino
+          - feminino
+        example: masculino
+      idade:
+        type: integer
+        example: 25
+      nivel_jogador:
+        type: number
+        format: float
+        description: Nível do jogador baseado nas avaliações recebidas (média das notas
+          como jogador)
+        example: 4.8
+      nivel_anfitriao:
+        type: number
+        format: float
+        description: Nível do anfitrião baseado nas avaliações recebidas (média das
+          notas como anfitrião)
+        example: 4.5
+      avaliacoes_jogador:
+        type: array
+        items:
+          $ref: "#/components/schemas/Avaliacao"
+        description: Lista de avaliações recebidas como jogador
+        example:
+          - id: avaliacao-789
+            id_avaliador: anfitriao-123
+            id_avaliado: jogador-123
+            nota: 5
+            comentario: Excelente desempenho durante a partida!
+            tipo: jogador
+          - id: avaliacao-790
+            id_avaliador: anfitriao-456
+            id_avaliado: jogador-123
+            nota: 4
+            comentario: Boa atuação, mas poderia se comunicar mais.
+            tipo: jogador
+      avaliacoes_anfitriao:
+        type: array
+        items:
+          $ref: "#/components/schemas/Avaliacao"
+        description: Lista de avaliações recebidas como anfitrião
+        example:
+          - id: avaliacao-321
+            id_avaliador: jogador-456
+            id_avaliado: jogador-123
+            nota: 4
+            comentario: Organização decente, mas o local poderia ser melhor.
+            tipo: anfitriao
+          - id: avaliacao-322
+            id_avaliador: jogador-789
+            id_avaliado: jogador-123
+            nota: 5
+            comentario: Ótima experiência como anfitrião!
+            tipo: anfitriao
+  Partida:
+    type: object
+    properties:
+      id:
+        type: string
+        example: partida-456
+        description: Identificador único da partida
+      local:
+        type: string
+        example: Quadra Municipal
+        description: Nome do local onde a partida acontecerá
+      data:
+        type: string
+        format: date
+        example: 2024-11-10
+        description: Data da partida (formato YYYY-MM-DD)
+      horario:
+        type: string
+        example: 18:00
+        description: Horário da partida (formato HH:MM)
+      faixa_etaria:
+        type: array
+        items:
+          type: integer
+        example:
+          - 18
+          - 35
+        description: Faixa etária dos participantes da partida. O intervalo inclui a
+          idade mínima e máxima
+      situacao:
+        type: string
+        enum:
+          - em_adesao
+          - marcada
+          - realizada
+        example: em_adesao
+        description: "Situação atual da partida: 'em_adesao' (aguardando jogadores),
+          'marcada' (confirmada), 'realizada' (já ocorreu)"
+      tipo:
+        type: string
+        enum:
+          - mista
+          - especifica
+        example: mista
+        description: "Tipo da partida: 'mista' (com jogadores de diferentes sexos) ou
+          'especifica' (para jogadores de um único sexo)"
+      jogadores:
+        type: array
+        items:
+          type: string
+        example:
+          - jogador-123
+          - jogador-456
+        description: Lista de identificadores dos jogadores que participam da partida
+      anfitriao:
+        type: string
+        example: jogador-123
+        description: Identificador do jogador que atua como anfitrião da partida
+  Avaliacao:
+    type: object
+    properties:
+      id:
+        type: string
+        example: avaliacao-123
+      id_avaliador:
+        type: string
+        description: ID do jogador ou anfitrião que fez a avaliação
+        example: jogador-123
+      id_avaliado:
+        type: string
+        description: ID do jogador, anfitrião ou partida avaliada
+        example: jogador-456
+      tipo_avaliacao:
+        type: string
+        enum:
+          - jogador
+          - anfitriao
+          - partida
+        description: Indica o contexto da avaliação
+        example: jogador
+      nota:
+        type: integer
+        description: Nota atribuída (por exemplo, de 1 a 5)
+        example: 5
+      comentario:
+        type: string
+        description: Comentário descritivo sobre a avaliação
+        example: Excelente desempenho durante a partida!
+      contexto_partida:
+        type: string
+        description: ID da partida relacionada à avaliação (se aplicável)
+        example: partida-456
+  Convite:
+    type: object
+    properties:
+      id:
+        type: string
+        example: convite-101
+        description: Identificador único do convite
+      id_partida:
+        type: string
+        example: partida-456
+        description: Identificador da partida para a qual o convite foi enviado
+      id_jogador:
+        type: string
+        example: jogador-456
+        description: Identificador do jogador que recebeu o convite
+      status:
+        type: string
+        enum:
+          - pendente
+          - aceito
+          - rejeitado
+        example: pendente
+        description: Status atual do convite. 'pendente' (convite ainda não respondido),
+          'aceito' (convite aceito pelo jogador), 'rejeitado' (convite rejeitado
+          pelo jogador)
+      tipo_convite:
+        type: string
+        enum:
+          - anfitriao
+          - auto_convite
+        example: anfitriao
+        description: Tipo de convite. 'anfitriao' (convite enviado pelo anfitrião da
+          partida), 'auto_convite' (convite enviado pelo próprio jogador para se
+          incluir na partida)
+      data_convite:
+        type: string
+        format: date-time
+        example: 2024-11-01T15:30:00Z
+        description: Data e hora em que o convite foi enviado (formato ISO 8601)
+  /jogadores:
+    post:
+      summary: Criar um novo jogador
+      operationId: criarJogador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Jogador"
+      responses:
+        "201":
+          description: Jogador criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Jogador"
+              examples:
+                sucesso:
+                  value:
+                    id: jogador-123
+                    nome: João Silva
+                    email: joao.silva@email.com
+                    sexo: masculino
+                    idade: 25
+                    nivel_jogador: 4
+                    nivel_anfitriao: 5
+                    avaliacoes_jogador: []
+                    avaliacoes_anfitriao: []
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Dados fornecidos estão em formato inválido
+    delete:
+      summary: Excluir um jogador
+      operationId: excluirJogador
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do jogador a ser excluído
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Jogador excluído com sucesso
+        "404":
+          description: Jogador não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Jogador não encontrado
+  /partidas:
+    post:
+      summary: Criar uma nova partida
+      operationId: criarPartida
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Partida"
+      responses:
+        "201":
+          description: Partida criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partida"
+              examples:
+                sucesso:
+                  value:
+                    id: partida-456
+                    local: Quadra Municipal
+                    data: 2024-11-10
+                    horario: 18:00
+                    faixa_etaria:
+                      - 18
+                      - 35
+                    situacao: em_adesao
+                    tipo: mista
+                    jogadores:
+                      - jogador-123
+                      - jogador-456
+                    anfitriao: jogador-123
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Dados fornecidos estão em formato inválido
+    put:
+      summary: Editar uma partida existente
+      operationId: editarPartida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da partida a ser editada
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Partida"
+      responses:
+        "200":
+          description: Partida editada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partida"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Dados fornecidos estão em formato inválido
+        "404":
+          description: Partida não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Partida não encontrada
+    delete:
+      summary: Excluir uma partida
+      operationId: excluirPartida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da partida a ser excluída
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Partida excluída com sucesso
+        "404":
+          description: Partida não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Partida não encontrada
+    get:
+      summary: Listar partidas
+      operationId: listarPartidas
+      parameters:
+        - name: situacao
+          in: query
+          description: Filtrar por situação da partida
+          schema:
+            type: string
+            enum:
+              - em_adesao
+              - marcada
+              - realizada
+        - name: tipo
+          in: query
+          description: Filtrar por tipo da partida (mista ou específica)
+          schema:
+            type: string
+            enum:
+              - mista
+              - especifica
+        - name: local
+          in: query
+          description: Filtrar por local da partida
+          schema:
+            type: string
+        - name: data
+          in: query
+          description: Filtrar por data da partida
+          schema:
+            type: string
+            format: date
+        - name: faixa_etaria
+          in: query
+          description: "Filtrar por faixa etária (ex: [18, 35])"
+          schema:
+            type: array
+            items:
+              type: integer
+      responses:
+        "200":
+          description: Lista de partidas retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Partida"
+        "404":
+          description: Nenhuma partida encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Nenhuma partida encontrada
+  /convites:
+    post:
+      summary: Enviar um convite para a partida
+      operationId: enviarConvite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Convite"
+      responses:
+        "201":
+          description: Convite enviado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Convite"
+              examples:
+                sucesso:
+                  value:
+                    id: convite-101
+                    id_partida: partida-456
+                    id_jogador: jogador-456
+                    status: pendente
+                    tipo_convite: anfitriao
+                    data_convite: 2024-11-01T15:30:00Z
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Dados fornecidos estão em formato inválido
+        "404":
+          description: Jogador ou partida não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Jogador ou partida não encontrada
+  /avaliacoes:
+    post:
+      summary: Avaliar uma partida ou jogador
+      operationId: avaliarPartidaOuJogador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AvaliacaoPartida"
+                - $ref: "#/components/schemas/AvaliacaoJogador"
+      responses:
+        "201":
+          description: Avaliação criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Avaliacao"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Dados fornecidos estão em formato inválido
+        "404":
+          description: Partida ou jogador não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Partida ou jogador não encontrado
+    put:
+      summary: Editar uma avaliação
+      operationId: editarAvaliacao
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: ID da avaliação a ser editada
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AvaliacaoPartida"
+                - $ref: "#/components/schemas/AvaliacaoJogador"
+      responses:
+        "200":
+          description: Avaliação editada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Avaliacao"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Dados fornecidos estão em formato inválido
+        "404":
+          description: Avaliação não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Avaliação não encontrada
+    delete:
+      summary: Excluir uma avaliação
+      operationId: excluirAvaliacao
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: ID da avaliação a ser excluída
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Avaliação excluída com sucesso
+        "404":
+          description: Avaliação não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Avaliação não encontrada
+  /jogadores/listar:
+    get:
+      summary: Listar jogadores
+      operationId: listarJogadores
+      parameters:
+        - name: nivel_jogador
+          in: query
+          description: Filtrar por nível do jogador (com base nas avaliações recebidas)
+          schema:
+            type: integer
+        - name: nivel_anfitriao
+          in: query
+          description: Filtrar por nível do anfitrião (com base nas avaliações recebidas)
+          schema:
+            type: integer
+        - name: idade
+          in: query
+          description: Filtrar por idade do jogador
+          schema:
+            type: integer
+        - name: sexo
+          in: query
+          description: Filtrar por sexo do jogador (masculino ou feminino)
+          schema:
+            type: string
+            enum:
+              - masculino
+              - feminino
+            example: masculino
+        - name: faixa_etaria
+          in: query
+          description: "Filtrar por faixa etária do jogador (exemplo: [18, 35])"
+          schema:
+            type: array
+            items:
+              type: integer
+          example:
+            - 18
+            - 35
+      responses:
+        "200":
+          description: Lista de jogadores retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Jogador"
+        "404":
+          description: Nenhum jogador encontrado com os critérios fornecidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Nenhum jogador encontrado com os critérios fornecidos
+  /convites/listar:
+    get:
+      summary: Listar convites enviados por um jogador
+      parameters:
+        - name: jogadorId
+          in: query
+          required: true
+          description: ID do jogador para listar os convites que ele enviou
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filtrar convites por status (pendente, aceito, rejeitado)
+          schema:
+            type: string
+            enum:
+              - pendente
+              - aceito
+              - rejeitado
+          example: pendente
+      responses:
+        "200":
+          description: Lista de convites retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Convite"
+        "404":
+          description: Nenhum convite encontrado para o jogador especificado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Nenhum convite encontrado para o jogador especificado
+  "/partidas/{id}/jogadores":
+    get:
+      summary: Listar jogadores de uma partida específica
+      operationId: listarJogadoresPartida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da partida para a qual os jogadores serão listados
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de jogadores na partida retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Jogador"
+              example:
+                - id: jogador-123
+                  nome: João Silva
+                  email: joao.silva@email.com
+                  sexo: masculino
+                  idade: 25
+                  nivel_jogador: 4
+                  nivel_anfitriao: 5
+        "404":
+          description: Partida não encontrada ou não possui jogadores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Partida não encontrada
+  "/jogadores/{id}":
+    get:
+      summary: Obter detalhes de um jogador específico
+      operationId: obterDetalhesJogador
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do jogador cujos detalhes serão retornados
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Detalhes do jogador retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Jogador"
+              example:
+                id: jogador-123
+                nome: João Silva
+                email: joao.silva@email.com
+                sexo: masculino
+                idade: 25
+                nivel_jogador: 4
+                nivel_anfitriao: 5
+                avaliacoes_jogador:
+                  - id: avaliacao-jogador-789
+                    id_avaliador: anfitriao-123
+                    id_jogador_avaliado: jogador-456
+                    nota: 5
+                    comentario: Excelente desempenho durante a partida!
+                    tipo_avaliacao: jogador
+                avaliacoes_anfitriao:
+                  - id: avaliacao-anfitriao-321
+                    id_avaliador: jogador-456
+                    id_jogador_avaliado: anfitriao-123
+                    nota: 4
+                    comentario: Bom anfitrião, a partida foi bem organizada!
+                    tipo_avaliacao: anfitriao
+        "404":
+          description: Jogador não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Jogador não encontrado
+  "/partidas/{id}/avaliacoes":
+    get:
+      summary: Listar avaliações de uma partida específica
+      operationId: listarAvaliacoesPartida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da partida para listar as avaliações associadas
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de avaliações retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: "#/components/schemas/AvaliacaoPartida"
+                    - $ref: "#/components/schemas/AvaliacaoJogador"
+              example:
+                - id: avaliacao-123
+                  id_avaliador: jogador-456
+                  id_jogador_avaliado: jogador-123
+                  nota: 5
+                  comentario: Ótima partida, muito bem organizada!
+                  tipo_avaliacao: partida
+                - id: avaliacao-456
+                  id_avaliador: anfitriao-123
+                  id_jogador_avaliado: jogador-789
+                  nota: 4
+                  comentario: Bom jogador, mas pode melhorar em alguns aspectos.
+                  tipo_avaliacao: jogador
+        "404":
+          description: Partida não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Partida não encontrada  
